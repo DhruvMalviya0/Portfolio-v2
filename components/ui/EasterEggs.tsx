@@ -850,13 +850,12 @@ function BeatmaniaOverlay({ onClose }: { onClose: () => void }) {
   const [feedback, setFeedback] = useState("");
   const [notes, setNotes] = useState<FallingNote[]>([]);
   const notesRef = useRef<FallingNote[]>([]);
-  const nextId = useRef(0);
 
   // Generate notes
   useEffect(() => {
     const generator = setInterval(() => {
       const lane = Math.floor(Math.random() * 4);
-      const newNote = { id: nextId.current++, lane, y: 0 };
+      const newNote = { id: Math.random() + Date.now(), lane, y: 0 };
       setNotes((prev) => [...prev, newNote]);
       notesRef.current.push(newNote);
     }, 450);
