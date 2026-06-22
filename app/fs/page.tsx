@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Fragment, useState } from "react";
 import { CanvasEffects } from "@/components/ui/CanvasEffects";
+import { SoulsDiscovery } from "@/components/ui/SoulsDiscovery";
 import { TransitionLink } from "@/components/ui/TransitionLink";
 import { REALMS } from "@/lib/realmConfig";
 
@@ -27,6 +28,13 @@ export default function FSLandingPage() {
 
   return (
     <main className="persona-stage">
+      {/* FromSoftware Area Discovery */}
+      <SoulsDiscovery
+        realmId="fs"
+        title="FULL-STACK REALM"
+        subtitle="FORGE · ARCHITECT OF INTERFACES"
+      />
+
       {/* Halftone texture overlay */}
       <div className="halftone" />
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { TransitionManager } from "@/components/transitions/TransitionManager";
+import { EasterEggs } from "@/components/ui/EasterEggs";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <TransitionManager />
+        <EasterEggs />
         {children}
       </body>
     </html>

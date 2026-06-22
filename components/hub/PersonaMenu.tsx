@@ -5,6 +5,7 @@ import { gsap } from "gsap";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { TransitionLink } from "@/components/ui/TransitionLink";
 import { HUB_MENU_ITEMS, type RealmId } from "@/lib/realmConfig";
+import { usePortfolioStore } from "@/lib/store";
 
 export function PersonaMenu() {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -15,6 +16,8 @@ export function PersonaMenu() {
   // Interactive tooltips state (E2 easter egg)
   const [hpTooltip, setHpTooltip] = useState<string | null>(null);
   const [mpTooltip, setMpTooltip] = useState<string | null>(null);
+
+  const { setHoveredRealm, setActiveEgg } = usePortfolioStore();
 
   useEffect(() => {
     const items = menuRef.current?.querySelectorAll(".menu-item");
@@ -63,14 +66,23 @@ export function PersonaMenu() {
       {/* HP/MP segmented stats */}
       <div ref={statsRef} className="stats">
         <div
-          className="stat-row"
+          className="stat-row cursor-pointer"
+          role="button"
+          tabIndex={0}
+          onClick={() => setActiveEgg("beatmania")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setActiveEgg("beatmania");
+            }
+          }}
           onMouseEnter={() =>
             setHpTooltip(
-              "HP: 70% — Stance intact. Fatigued by compiler errors.",
+              "HP: 70% — Stance intact. Fatigued by compiler errors. (Click to play)",
             )
           }
           onMouseLeave={() => setHpTooltip(null)}
-          style={{ position: "relative" }}
+          style={{ position: "relative", outline: "none" }}
         >
           <span className="stat-label">HP</span>
           <div className="stat-bar">
@@ -86,12 +98,23 @@ export function PersonaMenu() {
           )}
         </div>
         <div
-          className="stat-row"
+          className="stat-row cursor-pointer"
+          role="button"
+          tabIndex={0}
+          onClick={() => setActiveEgg("beatmania")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setActiveEgg("beatmania");
+            }
+          }}
           onMouseEnter={() =>
-            setMpTooltip("MP: 40% — Drained by CSS specificity battles.")
+            setMpTooltip(
+              "MP: 40% — Drained by CSS specificity battles. (Click to play)",
+            )
           }
           onMouseLeave={() => setMpTooltip(null)}
-          style={{ position: "relative" }}
+          style={{ position: "relative", outline: "none" }}
         >
           <span className="stat-label">MP</span>
           <div className="stat-bar">
@@ -109,7 +132,11 @@ export function PersonaMenu() {
       </div>
 
       {/* Menu block */}
-      <div ref={menuRef} className="menu">
+      <div
+        ref={menuRef}
+        className="menu"
+        onMouseLeave={() => setHoveredRealm(null)}
+      >
         {HUB_MENU_ITEMS.map((item, idx) => {
           const numStr = String(idx + 1).padStart(2, "0");
           const isActive = idx === activeIndex;
@@ -122,7 +149,13 @@ export function PersonaMenu() {
                 targetRealm={item.realm as RealmId}
                 className={`menu-item ${isActive ? "active" : ""}`}
                 style={{ outline: "none" }}
-                onMouseEnter={() => setActiveIndex(idx)}
+                onMouseEnter={() => {
+                  setActiveIndex(idx);
+                  setHoveredRealm(item.realm as RealmId);
+                  if (item.label === "ABOUT") {
+                    setActiveEgg("vn");
+                  }
+                }}
               >
                 <span className="menu-num">{numStr}</span>
                 <motion.span

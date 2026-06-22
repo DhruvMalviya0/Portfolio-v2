@@ -13,6 +13,18 @@ interface PortfolioStore {
   transitionType: TransitionType;
   transitionDestination: string | null;
 
+  // Active Egg state (mutex)
+  activeEgg: string | null;
+  setActiveEgg: (egg: string | null) => void;
+
+  // Hovered Realm state (for characters & monitor preview)
+  hoveredRealm: RealmId | null;
+  setHoveredRealm: (realm: RealmId | null) => void;
+
+  // Monitor channel override index
+  monitorChannelOverride: number | null;
+  setMonitorChannelOverride: (channel: number | null) => void;
+
   // Start a transition — resolves when animation is done
   triggerTransition: (
     href: string,
@@ -29,6 +41,16 @@ export const usePortfolioStore = create<PortfolioStore>((set) => ({
   isTransitioning: false,
   transitionType: null,
   transitionDestination: null,
+
+  activeEgg: null,
+  setActiveEgg: (egg) => set({ activeEgg: egg }),
+
+  hoveredRealm: null,
+  setHoveredRealm: (realm) => set({ hoveredRealm: realm }),
+
+  monitorChannelOverride: null,
+  setMonitorChannelOverride: (channel) =>
+    set({ monitorChannelOverride: channel }),
 
   triggerTransition: (href, type, onComplete) => {
     set({
