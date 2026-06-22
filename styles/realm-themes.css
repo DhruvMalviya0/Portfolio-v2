@@ -1,0 +1,283 @@
+/* ═══════════════════════════════════
+   HUB — Persona Menu
+═══════════════════════════════════ */
+
+.hub-root {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Ambient glow orbs in background */
+.hub-bg-ambient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.hub-bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  animation: orbFloat 8s ease-in-out infinite alternate;
+}
+.hub-bg-orb--1 {
+  width: 500px;
+  height: 500px;
+  background: var(--accent-1);
+  top: -100px;
+  left: -100px;
+  animation-delay: 0s;
+}
+.hub-bg-orb--2 {
+  width: 400px;
+  height: 400px;
+  background: var(--accent-2);
+  bottom: -100px;
+  right: 40%;
+  animation-delay: -3s;
+}
+.hub-bg-orb--3 {
+  width: 300px;
+  height: 300px;
+  background: var(--accent-1);
+  top: 50%;
+  right: 10%;
+  animation-delay: -5s;
+}
+
+@keyframes orbFloat {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+}
+
+/* ─── Persona Panel ─── */
+.persona-panel-bg {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 520px;
+  height: 100%;
+  background: var(--bg-secondary);
+  transform: skewX(-8deg) translateX(40px);
+  transform-origin: top right;
+  border-left: 1px solid var(--accent-1);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.6);
+}
+
+.persona-menu-inner {
+  position: relative;
+  z-index: 10;
+  width: 440px;
+  padding: 60px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-right: 20px;
+}
+
+/* ─── Title ─── */
+.persona-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.persona-title-sub {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.persona-title-main {
+  font-size: clamp(48px, 6vw, 72px);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.persona-title-divider {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-1), transparent);
+  margin-top: 12px;
+}
+
+/* ─── Menu List ─── */
+.persona-menu-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.persona-menu-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.persona-menu-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-primary);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: all 0.2s var(--ease-game);
+  position: relative;
+}
+
+.persona-menu-link::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent-1);
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: all 0.25s var(--ease-game);
+}
+
+.persona-menu-link:hover {
+  color: var(--bg-primary);
+  border-left-color: var(--accent-2);
+  padding-left: 28px;
+}
+
+.persona-menu-link:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.persona-menu-icon {
+  position: relative;
+  font-size: 16px;
+  color: var(--accent-1);
+  transition: color 0.2s;
+  width: 20px;
+}
+.persona-menu-link:hover .persona-menu-icon {
+  color: var(--bg-primary);
+}
+
+.persona-menu-label {
+  position: relative;
+  flex: 1;
+}
+
+.persona-menu-arrow {
+  position: relative;
+  font-size: 22px;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+.persona-menu-link:hover .persona-menu-arrow {
+  color: var(--bg-primary);
+  transform: translateX(4px);
+}
+
+/* ─── HUD Bars ─── */
+.persona-hud {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.hud-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hud-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+  width: 20px;
+}
+
+.hud-fill {
+  flex: 1;
+  height: 6px;
+  background: var(--border-subtle);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.hud-fill::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--fill);
+  background: var(--accent-1);
+  border-radius: 3px;
+  box-shadow: 0 0 8px var(--accent-glow);
+  animation: hudLoad 1.2s var(--ease-game) forwards;
+}
+
+.hud-fill--mp::after {
+  background: var(--accent-2);
+}
+
+@keyframes hudLoad {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--fill);
+  }
+}
+
+/* ─── Mobile ─── */
+@media (max-width: 768px) {
+  .hub-root {
+    justify-content: center;
+    align-items: flex-end;
+  }
+  .persona-panel-bg {
+    width: 100%;
+    transform: none;
+    border-left: none;
+    border-top: 1px solid var(--accent-1);
+  }
+  .persona-menu-inner {
+    width: 100%;
+    padding: 40px 24px;
+    margin: 0;
+  }
+  .persona-title-main {
+    font-size: 42px;
+  }
+  .persona-menu-link {
+    font-size: 16px;
+  }
+}
+
+/* ─── Animations ─── */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
