@@ -16,6 +16,12 @@
       "preset": "recommended",
       "complexity": {
         "noImportantStyles": "off"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "off"
+      },
+      "style": {
+        "noDescendingSpecificity": "off"
       }
     }
   },

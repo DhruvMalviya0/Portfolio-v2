@@ -1,16 +1,18 @@
 "use client";
 
 import { gsap } from "gsap";
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { TransitionLink } from "@/components/ui/TransitionLink";
-import { HUB_MENU_ITEMS, REALMS, type RealmId } from "@/lib/realmConfig";
+import { HUB_MENU_ITEMS, type RealmId } from "@/lib/realmConfig";
 
 export function PersonaMenu() {
-  const menuRef = useRef<HTMLUListElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    const items = menuRef.current?.querySelectorAll("li");
+    const items = menuRef.current?.querySelectorAll(".menu-item");
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
     // Title slides in from left
@@ -25,61 +27,80 @@ export function PersonaMenu() {
       tl.fromTo(
         items,
         { x: -80, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.4, stagger: 0.08 },
+        { x: 0, opacity: 1, duration: 0.4, stagger: 0.06 },
         "-=0.2",
       );
     }
+
+    // Stats fade in
+    tl.fromTo(
+      statsRef.current,
+      { y: 30, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.4 },
+      "-=0.3",
+    );
   }, []);
 
   return (
-    <div className="persona-menu-wrapper">
-      {/* Angled background panels */}
-      <div className="persona-panel-bg" />
-
-      <div className="persona-menu-inner">
-        {/* Game title header */}
-        <div ref={titleRef} className="persona-title">
-          <span className="persona-title-sub font-mono">▸ SELECT REALM</span>
-          <h1 className="persona-title-main font-display glow">LEAF.EXE</h1>
-          <div className="persona-title-divider" />
+    <div style={{ display: "contents" }}>
+      {/* Title block */}
+      <div ref={titleRef} className="title-block">
+        <span className="eyebrow">SELECT REALM</span>
+        <div className="title font-display">
+          LEAF
+          <br />
+          .EXE
         </div>
+      </div>
 
-        {/* Menu items */}
-        <ul ref={menuRef} className="persona-menu-list">
-          {HUB_MENU_ITEMS.map((item) => (
-            <li key={item.href} className="persona-menu-item">
+      {/* HP/MP segmented stats */}
+      <div ref={statsRef} className="stats">
+        <div className="stat-row">
+          <span className="stat-label">HP</span>
+          <div className="stat-bar">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div
+                key={`hp-${i}`}
+                className={`stat-seg ${i < 7 ? "fill" : ""}`}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="stat-row">
+          <span className="stat-label">MP</span>
+          <div className="stat-bar">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div
+                key={`mp-${i}`}
+                className={`stat-seg ${i < 4 ? "fill mp" : ""}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Menu block */}
+      <div ref={menuRef} className="menu">
+        {HUB_MENU_ITEMS.map((item, idx) => {
+          const numStr = String(idx + 1).padStart(2, "0");
+          const isActive = idx === activeIndex;
+
+          return (
+            <Fragment key={item.href}>
+              {idx === 3 && <div className="menu-divider" />}
               <TransitionLink
                 href={item.href}
                 targetRealm={item.realm as RealmId}
-                className="persona-menu-link font-display"
+                className={`menu-item ${isActive ? "active" : ""}`}
+                style={{ outline: "none" }}
+                onMouseEnter={() => setActiveIndex(idx)}
               >
-                <span className="persona-menu-icon">
-                  {item.realm ? REALMS[item.realm as RealmId].menuIcon : "▸"}
-                </span>
-                <span className="persona-menu-label">{item.label}</span>
-                <span className="persona-menu-arrow">›</span>
+                <span className="menu-num">{numStr}</span>
+                <span className="menu-label font-display">{item.label}</span>
               </TransitionLink>
-            </li>
-          ))}
-        </ul>
-
-        {/* HUD bar at bottom */}
-        <div className="persona-hud">
-          <div className="hud-bar">
-            <span className="hud-label font-mono">HP</span>
-            <div
-              className="hud-fill"
-              style={{ "--fill": "100%" } as React.CSSProperties}
-            />
-          </div>
-          <div className="hud-bar">
-            <span className="hud-label font-mono">MP</span>
-            <div
-              className="hud-fill hud-fill--mp"
-              style={{ "--fill": "75%" } as React.CSSProperties}
-            />
-          </div>
-        </div>
+            </Fragment>
+          );
+        })}
       </div>
     </div>
   );
