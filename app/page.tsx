@@ -1,10 +1,14 @@
 import { PersonaMenu } from "@/components/hub/PersonaMenu";
+import { CanvasEffects } from "@/components/ui/CanvasEffects";
 
 export default function HubPage() {
   return (
     <main className="persona-stage">
       {/* Halftone texture overlay */}
       <div className="halftone" />
+
+      {/* Background static & dust effects */}
+      <CanvasEffects />
 
       {/* Layered Slabs */}
       <div className="slab slab-1" />

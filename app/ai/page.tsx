@@ -1,12 +1,18 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Fragment, useState } from "react";
+import { CanvasEffects } from "@/components/ui/CanvasEffects";
 import { TransitionLink } from "@/components/ui/TransitionLink";
 import { REALMS } from "@/lib/realmConfig";
 
 export default function AILandingPage() {
   const realm = REALMS.ai;
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // Tooltip interactive state
+  const [hpTooltip, setHpTooltip] = useState<string | null>(null);
+  const [mpTooltip, setMpTooltip] = useState<string | null>(null);
 
   const menuItems = [
     { label: "ABOUT", href: "/ai/about" },
@@ -17,10 +23,15 @@ export default function AILandingPage() {
     { label: "RETURN TO HUB", href: "/" },
   ];
 
+  const springConfig = { type: "spring" as const, stiffness: 450, damping: 17 };
+
   return (
     <main className="persona-stage">
       {/* Halftone texture overlay */}
       <div className="halftone" />
+
+      {/* Background static & dust effects */}
+      <CanvasEffects />
 
       {/* Layered Slabs */}
       <div className="slab slab-1" />
@@ -39,7 +50,16 @@ export default function AILandingPage() {
 
       {/* HP/MP segmented stats */}
       <div className="stats">
-        <div className="stat-row">
+        <div
+          className="stat-row"
+          onMouseEnter={() =>
+            setHpTooltip(
+              "HP: 60% — Weights initialized. Backprop loss minimizing.",
+            )
+          }
+          onMouseLeave={() => setHpTooltip(null)}
+          style={{ position: "relative" }}
+        >
           <span className="stat-label">HP</span>
           <div className="stat-bar">
             {Array.from({ length: 10 }).map((_, i) => (
@@ -49,8 +69,18 @@ export default function AILandingPage() {
               />
             ))}
           </div>
+          {hpTooltip && (
+            <div className="stat-tooltip font-mono">{hpTooltip}</div>
+          )}
         </div>
-        <div className="stat-row">
+        <div
+          className="stat-row"
+          onMouseEnter={() =>
+            setMpTooltip("MP: 80% — Neural architecture is optimized.")
+          }
+          onMouseLeave={() => setMpTooltip(null)}
+          style={{ position: "relative" }}
+        >
           <span className="stat-label">MP</span>
           <div className="stat-bar">
             {Array.from({ length: 10 }).map((_, i) => (
@@ -60,6 +90,9 @@ export default function AILandingPage() {
               />
             ))}
           </div>
+          {mpTooltip && (
+            <div className="stat-tooltip font-mono">{mpTooltip}</div>
+          )}
         </div>
       </div>
 
@@ -79,7 +112,13 @@ export default function AILandingPage() {
                 onMouseEnter={() => setActiveIndex(idx)}
               >
                 <span className="menu-num">{numStr}</span>
-                <span className="menu-label font-display">{item.label}</span>
+                <motion.span
+                  className="menu-label font-display"
+                  animate={{ x: isActive ? 10 : 0 }}
+                  transition={springConfig}
+                >
+                  {item.label}
+                </motion.span>
               </TransitionLink>
             </Fragment>
           );

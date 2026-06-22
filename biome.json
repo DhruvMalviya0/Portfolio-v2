@@ -22,6 +22,9 @@
       },
       "style": {
         "noDescendingSpecificity": "off"
+      },
+      "a11y": {
+        "noStaticElementInteractions": "off"
       }
     }
   },

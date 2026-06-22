@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { gsap } from "gsap";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { TransitionLink } from "@/components/ui/TransitionLink";
@@ -10,6 +11,10 @@ export function PersonaMenu() {
   const titleRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // Interactive tooltips state (E2 easter egg)
+  const [hpTooltip, setHpTooltip] = useState<string | null>(null);
+  const [mpTooltip, setMpTooltip] = useState<string | null>(null);
 
   useEffect(() => {
     const items = menuRef.current?.querySelectorAll(".menu-item");
@@ -41,6 +46,8 @@ export function PersonaMenu() {
     );
   }, []);
 
+  const springConfig = { type: "spring" as const, stiffness: 450, damping: 17 };
+
   return (
     <div style={{ display: "contents" }}>
       {/* Title block */}
@@ -55,7 +62,16 @@ export function PersonaMenu() {
 
       {/* HP/MP segmented stats */}
       <div ref={statsRef} className="stats">
-        <div className="stat-row">
+        <div
+          className="stat-row"
+          onMouseEnter={() =>
+            setHpTooltip(
+              "HP: 70% — Stance intact. Fatigued by compiler errors.",
+            )
+          }
+          onMouseLeave={() => setHpTooltip(null)}
+          style={{ position: "relative" }}
+        >
           <span className="stat-label">HP</span>
           <div className="stat-bar">
             {Array.from({ length: 10 }).map((_, i) => (
@@ -65,8 +81,18 @@ export function PersonaMenu() {
               />
             ))}
           </div>
+          {hpTooltip && (
+            <div className="stat-tooltip font-mono">{hpTooltip}</div>
+          )}
         </div>
-        <div className="stat-row">
+        <div
+          className="stat-row"
+          onMouseEnter={() =>
+            setMpTooltip("MP: 40% — Drained by CSS specificity battles.")
+          }
+          onMouseLeave={() => setMpTooltip(null)}
+          style={{ position: "relative" }}
+        >
           <span className="stat-label">MP</span>
           <div className="stat-bar">
             {Array.from({ length: 10 }).map((_, i) => (
@@ -76,6 +102,9 @@ export function PersonaMenu() {
               />
             ))}
           </div>
+          {mpTooltip && (
+            <div className="stat-tooltip font-mono">{mpTooltip}</div>
+          )}
         </div>
       </div>
 
@@ -96,7 +125,13 @@ export function PersonaMenu() {
                 onMouseEnter={() => setActiveIndex(idx)}
               >
                 <span className="menu-num">{numStr}</span>
-                <span className="menu-label font-display">{item.label}</span>
+                <motion.span
+                  className="menu-label font-display"
+                  animate={{ x: isActive ? 10 : 0 }}
+                  transition={springConfig}
+                >
+                  {item.label}
+                </motion.span>
               </TransitionLink>
             </Fragment>
           );

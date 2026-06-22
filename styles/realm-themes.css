@@ -22,6 +22,7 @@
   mix-blend-mode: multiply;
   pointer-events: none;
   z-index: 50;
+  animation: halftoneDrift 75s linear infinite;
 }
 
 /* ===== LAYERED DIAGONAL SLABS ===== */
@@ -38,18 +39,21 @@
   background: var(--bg-primary);
   transform: skewX(-12deg);
   border-left: 2px solid var(--accent-1);
+  animation: slabBreathe1 10s ease-in-out infinite alternate;
 }
 .slab-2 {
   right: 30%;
   width: 10%;
   background: var(--accent-2);
   transform: skewX(-12deg);
+  animation: slabBreathe2 10s ease-in-out infinite alternate -2s;
 }
 .slab-3 {
   right: 0;
   width: 42%;
   background: var(--accent-1);
   transform: skewX(-12deg);
+  animation: slabBreathe3 10s ease-in-out infinite alternate -4s;
 }
 
 /* thin divider line */
@@ -82,6 +86,7 @@
   filter: contrast(1.4);
   clip-path: polygon(0 4%, 100% 0, 96% 100%, 4% 96%);
   z-index: 4;
+  animation: kenBurns 25s ease-in-out infinite alternate;
 }
 
 /* ===== TITLE BLOCK ===== */
@@ -113,6 +118,7 @@
   text-transform: uppercase;
   transform: rotate(-2deg);
   text-shadow: 6px 6px 0 var(--accent-1);
+  animation: misregister 5s ease-in-out infinite alternate;
 }
 
 /* ===== MENU LIST ===== */
@@ -164,6 +170,8 @@
   margin: 0 -20px;
   padding: 14px 20px;
   border-bottom-color: transparent;
+  border-left: 4px solid var(--accent-1);
+  animation: activePulse 2s ease-in-out infinite;
 }
 .menu-item.active .menu-label {
   color: var(--accent-2);
@@ -222,6 +230,14 @@
 }
 .stat-seg.fill.mp {
   background: var(--accent-2);
+}
+
+/* Low-power flickering effect on random segments */
+.stat-bar div:nth-child(3) {
+  animation: statFlicker 6s infinite alternate;
+}
+.stat-bar div:nth-child(7) {
+  animation: statFlicker 8s infinite alternate -3s;
 }
 
 /* ===== METADATA ===== */
@@ -318,5 +334,124 @@
   }
   .meta {
     display: none;
+  }
+}
+
+/* ===== KEYFRAME ANIMATIONS (Make It Alive) ===== */
+@keyframes halftoneDrift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 12px 12px;
+  }
+}
+
+@keyframes slabBreathe1 {
+  0%,
+  100% {
+    transform: skewX(-12deg) translateX(0);
+  }
+  50% {
+    transform: skewX(-12.5deg) translateX(2px);
+  }
+}
+
+@keyframes slabBreathe2 {
+  0%,
+  100% {
+    transform: skewX(-12deg) translateX(0);
+  }
+  50% {
+    transform: skewX(-11.5deg) translateX(-1px);
+  }
+}
+
+@keyframes slabBreathe3 {
+  0%,
+  100% {
+    transform: skewX(-12deg) translateX(0);
+  }
+  50% {
+    transform: skewX(-12.3deg) translateX(1px);
+  }
+}
+
+@keyframes misregister {
+  0%,
+  100% {
+    text-shadow: 6px 6px 0 var(--accent-1);
+  }
+  50% {
+    text-shadow: 4px 5px 0 var(--accent-1);
+  }
+}
+
+@keyframes kenBurns {
+  0%,
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.05) translate(-4px, 4px);
+  }
+}
+
+@keyframes statFlicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
+  55% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  97% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes activePulse {
+  0%,
+  100% {
+    border-left-color: var(--accent-1);
+  }
+  50% {
+    border-left-color: var(--accent-2);
+  }
+}
+
+/* ===== STAT TOOLTIP ===== */
+.stat-tooltip {
+  position: absolute;
+  left: 105%;
+  top: 50%;
+  transform: translateY(-50%) skewX(-12deg);
+  background: var(--accent-1);
+  color: var(--bg-primary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  white-space: nowrap;
+  z-index: 100;
+  border: 1px solid var(--accent-2);
+  box-shadow: 4px 4px 0 var(--bg-primary);
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .stat-tooltip {
+    left: 0;
+    top: -35px;
+    transform: skewX(-12deg);
   }
 }
