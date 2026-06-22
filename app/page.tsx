@@ -2,15 +2,28 @@ import { PersonaMenu } from "@/components/hub/PersonaMenu";
 
 export default function HubPage() {
   return (
-    <main className="hub-root">
-      {/* Ambient background — will be replaced with Three.js in Phase 2 */}
-      <div className="hub-bg-ambient" aria-hidden="true">
-        <div className="hub-bg-orb hub-bg-orb--1" />
-        <div className="hub-bg-orb hub-bg-orb--2" />
-        <div className="hub-bg-orb hub-bg-orb--3" />
-      </div>
+    <main className="persona-stage">
+      {/* Halftone texture overlay */}
+      <div className="halftone" />
 
+      {/* Layered Slabs */}
+      <div className="slab slab-1" />
+      <div className="slab slab-2" />
+      <div className="slab slab-3" />
+      <div className="stitch" />
+
+      {/* Photo Strip duotone placeholder */}
+      <div className="photo-strip" />
+
+      {/* Main menu contents (Title, Stats, Links) */}
       <PersonaMenu />
+
+      {/* Metadata footer */}
+      <div className="meta">DHRUV MALVIYA — PORTFOLIO V2</div>
+
+      {/* Corner ticks */}
+      <div className="tick tl" />
+      <div className="tick br" />
     </main>
   );
 }

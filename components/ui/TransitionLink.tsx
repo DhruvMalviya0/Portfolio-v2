@@ -11,6 +11,7 @@ interface TransitionLinkProps {
   className?: string;
   targetRealm?: RealmId | null;
   style?: React.CSSProperties;
+  onMouseEnter?: () => void;
 }
 
 export function TransitionLink({
@@ -19,6 +20,7 @@ export function TransitionLink({
   className,
   targetRealm,
   style,
+  onMouseEnter,
 }: TransitionLinkProps) {
   const router = useRouter();
   const { triggerTransition, endTransition } = usePortfolioStore();
@@ -45,7 +47,13 @@ export function TransitionLink({
   };
 
   return (
-    <a href={href} onClick={handleClick} className={className} style={style}>
+    <a
+      href={href}
+      onClick={handleClick}
+      className={className}
+      style={style}
+      onMouseEnter={onMouseEnter}
+    >
       {children}
     </a>
   );

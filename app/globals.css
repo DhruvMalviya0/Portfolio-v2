@@ -4,16 +4,16 @@
 
 /* ─── Global Tokens ─── */
 :root {
-  /* Hub defaults (Persona red/gold) */
-  --accent-1: #ff2d55;
-  --accent-2: #ffd700;
-  --accent-glow: rgba(255, 45, 85, 0.4);
-  --bg-primary: #080810;
-  --bg-secondary: #10101e;
-  --bg-card: rgba(255, 255, 255, 0.04);
-  --text-primary: #f0f0ff;
-  --text-muted: #6666aa;
-  --border-subtle: rgba(255, 255, 255, 0.08);
+  /* Hub defaults (Persona red/bone white/charcoal) */
+  --accent-1: #d61f3c;
+  --accent-2: #e8e3d8;
+  --accent-glow: transparent;
+  --bg-primary: #0c0c0c;
+  --bg-secondary: #0c0c0c;
+  --bg-card: rgba(232, 227, 216, 0.05);
+  --text-primary: #e8e3d8;
+  --text-muted: rgba(232, 227, 216, 0.45);
+  --border-subtle: rgba(12, 12, 12, 0.25);
 
   /* Typography */
   --font-display: "Rajdhani", sans-serif;
@@ -28,21 +28,21 @@
 [data-realm="fs"] {
   --accent-1: #00ffff;
   --accent-2: #7b2fbe;
-  --accent-glow: rgba(0, 255, 255, 0.35);
+  --accent-glow: transparent;
   --bg-primary: #0a0a1a;
 }
 
 [data-realm="ds"] {
   --accent-1: #ffb800;
   --accent-2: #c0392b;
-  --accent-glow: rgba(255, 184, 0, 0.35);
+  --accent-glow: transparent;
   --bg-primary: #1a1040;
 }
 
 [data-realm="ai"] {
   --accent-1: #39ff14;
   --accent-2: #ffffff;
-  --accent-glow: rgba(57, 255, 20, 0.35);
+  --accent-glow: transparent;
   --bg-primary: #050505;
 }
 
@@ -100,9 +100,7 @@ body {
   color: var(--accent-2);
 }
 .glow {
-  text-shadow:
-    0 0 20px var(--accent-glow),
-    0 0 40px var(--accent-glow);
+  text-shadow: 5px 5px 0 var(--accent-1);
 }
 
 /* ─── Reduced motion ─── */
