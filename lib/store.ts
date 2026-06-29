@@ -21,6 +21,10 @@ interface PortfolioStore {
   hoveredRealm: RealmId | null;
   setHoveredRealm: (realm: RealmId | null) => void;
 
+  // Active realm state for holograms and audio (hub, fs, ds, ai, about, connect)
+  activeRealmId: string;
+  setActiveRealmId: (id: string) => void;
+
   // Monitor channel override index
   monitorChannelOverride: number | null;
   setMonitorChannelOverride: (channel: number | null) => void;
@@ -47,6 +51,9 @@ export const usePortfolioStore = create<PortfolioStore>((set) => ({
 
   hoveredRealm: null,
   setHoveredRealm: (realm) => set({ hoveredRealm: realm }),
+
+  activeRealmId: "hub",
+  setActiveRealmId: (id) => set({ activeRealmId: id }),
 
   monitorChannelOverride: null,
   setMonitorChannelOverride: (channel) =>

@@ -59,6 +59,6 @@ export const HUB_MENU_ITEMS = [
   { label: "FULL-STACK REALM", href: "/fs", realm: "fs" as RealmId },
   { label: "DATA SCIENCE REALM", href: "/ds", realm: "ds" as RealmId },
   { label: "AI / ML REALM", href: "/ai", realm: "ai" as RealmId },
-  { label: "ABOUT", href: "/fs/about", realm: null },
-  { label: "CONNECT", href: "/fs/connect", realm: null },
+  { label: "ABOUT", href: "/fs/about", realm: "about" as any },
+  { label: "CONNECT", href: "/fs/connect", realm: "connect" as any },
 ];

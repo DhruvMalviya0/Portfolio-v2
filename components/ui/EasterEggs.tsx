@@ -225,9 +225,6 @@ export function EasterEggs() {
       {activeEgg === "hades" && (
         <HadesBoonOverlay onClose={() => setActiveEgg(null)} />
       )}
-      {activeEgg === "beatmania" && (
-        <BeatmaniaOverlay onClose={() => setActiveEgg(null)} />
-      )}
       {activeEgg === "vn" && <VnOverlay onClose={() => setActiveEgg(null)} />}
     </AnimatePresence>
   );
@@ -834,178 +831,6 @@ function HadesBoonOverlay({ onClose }: { onClose: () => void }) {
   );
 }
 
-// 4. BEATMANIA OVERLAY
-interface FallingNote {
-  id: number;
-  lane: number; // 0, 1, 2, 3
-  y: number; // percentage from top 0 to 100
-}
-
-// Game keys: D, F, J, K corresponding to lanes 0, 1, 2, 3
-const laneKeys = ["d", "f", "j", "k"];
-const laneColors = ["#00FFFF", "#FFB800", "#39FF14", "#d61f3c"];
-
-function BeatmaniaOverlay({ onClose }: { onClose: () => void }) {
-  const [score, setScore] = useState(0);
-  const [feedback, setFeedback] = useState("");
-  const [notes, setNotes] = useState<FallingNote[]>([]);
-  const notesRef = useRef<FallingNote[]>([]);
-
-  // Generate notes
-  useEffect(() => {
-    const generator = setInterval(() => {
-      const lane = Math.floor(Math.random() * 4);
-      const newNote = { id: Math.random() + Date.now(), lane, y: 0 };
-      setNotes((prev) => [...prev, newNote]);
-      notesRef.current.push(newNote);
-    }, 450);
-
-    return () => clearInterval(generator);
-  }, []);
-
-  // Move notes down
-  useEffect(() => {
-    const loop = setInterval(() => {
-      setNotes((prev) => {
-        const updated = prev
-          .map((n) => ({ ...n, y: n.y + 3.5 }))
-          .filter((n) => {
-            if (n.y >= 98) {
-              setFeedback("MISS");
-              return false;
-            }
-            return true;
-          });
-        notesRef.current = updated;
-        return updated;
-      });
-    }, 50);
-
-    return () => clearInterval(loop);
-  }, []);
-
-  // Keyboard hit listener
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      const laneIdx = laneKeys.indexOf(key);
-      if (laneIdx === -1) return;
-
-      playSound("beat_hit");
-
-      // Find closest note in the active lane near the target bar (y value 80-92)
-      const activeNotes = notesRef.current.filter((n) => n.lane === laneIdx);
-      if (activeNotes.length === 0) return;
-
-      // Find note closest to y = 86 (perfect target)
-      let closestNote = activeNotes[0];
-      let minDist = Math.abs(closestNote.y - 86);
-
-      for (let i = 1; i < activeNotes.length; i++) {
-        const dist = Math.abs(activeNotes[i].y - 86);
-        if (dist < minDist) {
-          minDist = dist;
-          closestNote = activeNotes[i];
-        }
-      }
-
-      if (minDist < 6) {
-        setScore((s) => s + 100);
-        setFeedback("PERFECT!");
-        // Remove from list
-        setNotes((prev) => prev.filter((n) => n.id !== closestNote.id));
-        notesRef.current = notesRef.current.filter(
-          (n) => n.id !== closestNote.id,
-        );
-      } else if (minDist < 12) {
-        setScore((s) => s + 50);
-        setFeedback("GOOD!");
-        setNotes((prev) => prev.filter((n) => n.id !== closestNote.id));
-        notesRef.current = notesRef.current.filter(
-          (n) => n.id !== closestNote.id,
-        );
-      } else {
-        setFeedback("BAD!");
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  return (
-    <motion.div
-      className="fixed inset-0 z-[9990] flex items-center justify-center"
-      style={{
-        background: "rgba(12, 12, 12, 0.9)",
-        backdropFilter: "blur(6px)",
-      }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      <div className="relative border-2 border-red-500 bg-[#0d0d0d] p-6 text-red-500 font-mono shadow-[0_0_20px_rgba(214,31,60,0.3)] max-w-sm w-full flex flex-col items-center">
-        <div className="w-full flex justify-between items-center border-b border-red-500 pb-2 mb-4">
-          <span className="font-bold tracking-widest">BEATMANIA.EXE</span>
-          <span className="font-bold">SCORE: {score}</span>
-        </div>
-
-        {/* Music tracks display */}
-        <div className="relative w-full h-[280px] bg-black border-2 border-red-900 overflow-hidden flex">
-          {/* Lanes */}
-          {Array.from({ length: 4 }).map((_, l) => (
-            <div
-              key={`lane-${l}`}
-              className="flex-1 h-full border-r border-red-900/30 relative"
-            >
-              <span className="absolute bottom-1 left-0 right-0 text-center text-[10px] font-bold text-gray-600">
-                {laneKeys[l].toUpperCase()}
-              </span>
-            </div>
-          ))}
-
-          {/* Falling Notes */}
-          {notes.map((n) => (
-            <div
-              key={n.id}
-              className="absolute w-[23%] h-4 shadow-[0_0_8px_rgba(255,255,255,0.4)]"
-              style={{
-                left: `${n.lane * 25 + 1}%`,
-                top: `${n.y}%`,
-                backgroundColor: laneColors[n.lane],
-                borderRadius: "2px",
-              }}
-            />
-          ))}
-
-          {/* Target Line bar */}
-          <div className="absolute bottom-8 left-0 right-0 h-1 bg-white border-t border-b border-red-500 opacity-80" />
-        </div>
-
-        {/* Scoring feedback */}
-        <div className="my-3 h-6 text-lg font-bold text-center w-full animate-bounce">
-          {feedback}
-        </div>
-
-        <div className="text-[10px] text-gray-500 text-center mb-4">
-          Press [D], [F], [J], [K] when blocks cross target line
-        </div>
-
-        <div className="flex justify-between items-center text-xs w-full">
-          <span>[ESC] TO LEAVE SEGMENT</span>
-          <button
-            type="button"
-            onClick={onClose}
-            className="border border-red-500 hover:bg-red-500 hover:text-black font-bold px-3 py-1 transition-colors cursor-pointer"
-          >
-            CLOSE
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
 // 5. VISUAL NOVEL OVERLAY
 function VnOverlay({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState(0);
@@ -1094,6 +919,15 @@ function VnOverlay({ onClose }: { onClose: () => void }) {
             minHeight: "150px",
           }}
         >
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-3 right-4 z-10 w-7 h-7 flex items-center justify-center text-[#39FF14] hover:bg-[#39FF14] hover:text-black border border-[#39FF14] font-bold text-sm transition-colors cursor-pointer"
+            aria-label="Close dialogue"
+          >
+            ✕
+          </button>
           <div>
             <div className="text-xs font-bold text-[#39FF14] uppercase tracking-wider mb-2 font-display">
               {current.speaker}

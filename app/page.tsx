@@ -1,55 +1,25 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
 import { PersonaMenu } from "@/components/hub/PersonaMenu";
 import { CanvasEffects } from "@/components/ui/CanvasEffects";
+import Scene from "@/components/three/Scene";
+import { AudioController } from "@/components/ui/AudioController";
 import { usePortfolioStore } from "@/lib/store";
-
-// Audio click helper
-function playClickSound() {
-  if (typeof window === "undefined") return;
-  const AudioContextClass =
-    window.AudioContext ||
-    (window as Window & { webkitAudioContext?: typeof AudioContext })
-      .webkitAudioContext;
-  if (!AudioContextClass) return;
-  try {
-    const ctx = new AudioContextClass();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(600, ctx.currentTime);
-    gain.gain.setValueAtTime(0.02, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.05);
-  } catch (_e) {}
-}
 
 export default function HubPage() {
   const { hoveredRealm } = usePortfolioStore();
-  const [channel, setChannel] = useState(0);
-
-  const cycleChannel = () => {
-    playClickSound();
-    setChannel((c) => (c + 1) % 5);
-  };
-
-  const channelLabels = [
-    "CH-00: CRT STATIC",
-    "CH-01: COMPILER FEED",
-    "CH-02: WAVE ANALYZER",
-    "CH-03: CORE STRUCTURE",
-    "CH-04: CODE WATERFALL",
-  ];
 
   return (
     <main className="persona-stage">
+      {/* Global Audio Controller */}
+      <AudioController />
+
       {/* Halftone texture overlay */}
       <div className="halftone" />
+
+      {/* R3F 3D Background Scene (Hologram, Fog, Sparkles) */}
+      <Scene />
 
       {/* Background static & dust effects */}
       <CanvasEffects />
@@ -268,34 +238,9 @@ export default function HubPage() {
         </AnimatePresence>
       </div>
 
-      {/* ZONE B: INTERACTIVE CRT MONITOR */}
-      <div
-        className="monitor-frame"
-        role="button"
-        tabIndex={0}
-        onClick={cycleChannel}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            cycleChannel();
-          }
-        }}
-      >
-        <div className="monitor-screen">
-          <div className="monitor-header">
-            <span>{channelLabels[channel]}</span>
-            <span className="ml-auto font-mono text-[8px] animate-pulse">
-              ● LIVE
-            </span>
-          </div>
-
-          <div className="relative flex-1">
-            <MonitorScreen channel={channel} />
-          </div>
-
-          <div className="monitor-scanlines" />
-          <div className="monitor-flicker" />
-        </div>
+      {/* ZONE B: CHARACTER PORTRAIT CARD */}
+      <div className="portrait-card">
+        <CharacterPortraitWindow hoveredRealm={hoveredRealm} />
       </div>
 
       {/* Main menu contents (Title, Stats, Links) */}
@@ -311,252 +256,254 @@ export default function HubPage() {
   );
 }
 
-// Monitor Screen Subcomponent to handle different screens
-function MonitorScreen({ channel }: { channel: number }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [logs, setLogs] = useState<string[]>([]);
+function CharacterPortraitWindow({
+  hoveredRealm,
+}: {
+  hoveredRealm: string | null;
+}) {
+  const { activeRealmId } = usePortfolioStore();
 
-  // Channel 0: CRT Static
-  useEffect(() => {
-    if (channel !== 0) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    let animId: number;
-
-    const render = () => {
-      const imgData = ctx.createImageData(canvas.width, canvas.height);
-      const data = imgData.data;
-      for (let i = 0; i < data.length; i += 4) {
-        const val = Math.random() * 255;
-        data[i] = val;
-        data[i + 1] = val;
-        data[i + 2] = val;
-        data[i + 3] = 255;
-      }
-      ctx.putImageData(imgData, 0, 0);
-      animId = requestAnimationFrame(render);
-    };
-
-    render();
-    return () => cancelAnimationFrame(animId);
-  }, [channel]);
-
-  // Channel 1: Compiler logs
-  useEffect(() => {
-    if (channel !== 1) return;
-    setLogs([
-      "INITIALIZING COMPILER CORE...",
-      "FETCHING DEPS & STACK ALIGNMENT...",
-      "SYSTEM STATUS: ONLINE",
-    ]);
-
-    const feeds = [
-      "GET /fs/about - 200 OK",
-      "GET /ds/projects - 200 OK",
-      "GET /ai/connect - 200 OK",
-      "Compiling Shaders for CodeRain...",
-      "Loaded Forge core modules.",
-      "Oracle reading data vectors...",
-      "Neuron sync weights ready.",
-      "Garbage collection executed (18ms)",
-      "Database status: CONNECTED",
-      "Memory usage: 42% | Load: 0.12",
-      "Configuring biometric handshakes...",
-    ];
-
-    const timer = setInterval(() => {
-      setLogs((prev) => {
-        const nextVal = feeds[Math.floor(Math.random() * feeds.length)];
-        return [
-          ...prev.slice(-8),
-          `[${new Date().toLocaleTimeString()}] ${nextVal}`,
-        ];
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [channel]);
-
-  // Channel 2: Wave Analyzer
-  useEffect(() => {
-    if (channel !== 2) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    let animId: number;
-    let time = 0;
-
-    const render = () => {
-      ctx.fillStyle = "#020202";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = "rgba(57, 255, 20, 0.8)";
-
-      // Apply accent variables colors if available in root style
-      const compStyle = getComputedStyle(document.documentElement);
-      const accent =
-        compStyle.getPropertyValue("--accent-1").trim() || "#39FF14";
-      ctx.strokeStyle = accent;
-
-      // Draw Grid
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
-      ctx.lineWidth = 0.5;
-      for (let i = 0; i < canvas.width; i += 15) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, canvas.height);
-        ctx.stroke();
-      }
-      for (let j = 0; j < canvas.height; j += 15) {
-        ctx.beginPath();
-        ctx.moveTo(0, j);
-        ctx.lineTo(canvas.width, j);
-        ctx.stroke();
-      }
-
-      // Draw wave
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      const midY = canvas.height / 2;
-      ctx.moveTo(0, midY);
-
-      for (let x = 0; x < canvas.width; x++) {
-        const y =
-          midY +
-          Math.sin(x * 0.06 + time) * 15 * Math.cos(x * 0.02 + time * 0.5);
-        ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-
-      time += 0.08;
-      animId = requestAnimationFrame(render);
-    };
-
-    render();
-    return () => cancelAnimationFrame(animId);
-  }, [channel]);
-
-  // Channel 4: Matrix rain
-  useEffect(() => {
-    if (channel !== 4) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    let animId: number;
-
-    const cols = Math.floor(canvas.width / 6);
-    const yPos = Array(cols).fill(0);
-
-    const render = () => {
-      ctx.fillStyle = "rgba(2, 2, 2, 0.15)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const compStyle = getComputedStyle(document.documentElement);
-      ctx.fillStyle =
-        compStyle.getPropertyValue("--accent-1").trim() || "#39FF14";
-      ctx.font = "8px monospace";
-
-      for (let i = 0; i < cols; i++) {
-        const text = String.fromCharCode(33 + Math.random() * 93);
-        const x = i * 6;
-        const y = yPos[i];
-        ctx.fillText(text, x, y);
-
-        if (y > 80 + Math.random() * 10000) {
-          yPos[i] = 0;
-        } else {
-          yPos[i] += 4;
-        }
-      }
-      animId = requestAnimationFrame(render);
-    };
-
-    render();
-    return () => cancelAnimationFrame(animId);
-  }, [channel]);
-
-  if (channel === 0) {
+  if (!hoveredRealm) {
     return (
-      <canvas
-        ref={canvasRef}
-        width={220}
-        height={140}
-        className="w-full h-full block"
-      />
-    );
-  }
-
-  if (channel === 1) {
-    return (
-      <div className="monitor-logs font-mono text-[8px] leading-normal text-current h-full overflow-hidden select-none bg-black/40">
-        {logs.map((log, idx) => (
-          <div key={`log-${idx}`} className="truncate">
-            {log}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (channel === 2) {
-    return (
-      <canvas
-        ref={canvasRef}
-        width={220}
-        height={140}
-        className="w-full h-full block"
-      />
-    );
-  }
-
-  if (channel === 3) {
-    return (
-      <div className="monitor-wireframe w-full h-full flex items-center justify-center bg-black/10 select-none">
-        <svg
-          width="80"
-          height="80"
-          viewBox="0 0 100 100"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          className="animate-[spin_10s_linear_infinite] opacity-80"
-          style={{ transformOrigin: "center" }}
-        >
-          <title>Wireframe Node</title>
-          <polygon points="50,15 90,50 50,85 10,50" />
-          <line x1="50" y1="15" x2="50" y2="85" />
-          <line x1="10" y1="50" x2="90" y2="50" />
-          <circle
-            cx="50"
-            cy="50"
-            r="8"
-            fill="var(--bg-primary)"
+      <div className="portrait-card-back">
+        {/* Rotating Tarot / Gear Design */}
+        <div className="portrait-tarot-design">
+          <svg
+            width="80"
+            height="80"
+            viewBox="0 0 100 100"
+            fill="none"
             stroke="currentColor"
             strokeWidth="1.5"
-          />
-          <circle cx="50" cy="15" r="3" fill="currentColor" />
-          <circle cx="90" cy="50" r="3" fill="currentColor" />
-          <circle cx="50" cy="85" r="3" fill="currentColor" />
-          <circle cx="10" cy="50" r="3" fill="currentColor" />
-        </svg>
+          >
+            <title>Tarot Card Design</title>
+            <circle cx="50" cy="50" r="45" strokeDasharray="3 3" />
+            <circle cx="50" cy="50" r="30" />
+            <polygon points="50,5 95,50 50,95 5,50" />
+            <polygon points="50,20 80,50 50,80 20,50" />
+            <circle cx="50" cy="50" r="6" fill="currentColor" />
+          </svg>
+        </div>
+        <div className="mt-4 font-display text-xs tracking-[0.25em] text-[#e8e3d8] font-bold text-center">
+          LEAF.EXE CORE
+        </div>
+        <div className="text-[8px] font-mono text-zinc-500 uppercase mt-1">
+          Awaiting Selection...
+        </div>
+        <AudioVisualizer activeRealmId={activeRealmId} />
       </div>
     );
   }
 
-  if (channel === 4) {
+  const details = {
+    fs: {
+      name: "FORGE",
+      role: "ARCHITECT",
+      classTitle: "ENGINEER",
+      stats: [
+        { label: "STR", val: 90 },
+        { label: "MAG", val: 70 },
+        { label: "AGI", val: 85 },
+        { label: "LUK", val: 60 },
+      ],
+      color: "#00FFFF",
+      svg: (
+        <svg
+          viewBox="0 0 100 120"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title>Forge Profile</title>
+          <path
+            d="M50 15L80 45V75L90 85V110H10V85L20 75V45L50 15Z"
+            fill="#00FFFF"
+            opacity="0.4"
+          />
+          <circle cx="50" cy="50" r="12" stroke="#00FFFF" strokeWidth="2" />
+          <line
+            x1="50"
+            y1="62"
+            x2="50"
+            y2="100"
+            stroke="#00FFFF"
+            strokeWidth="2"
+          />
+          <rect x="25" y="85" width="50" height="4" fill="#00FFFF" />
+        </svg>
+      ),
+    },
+    ds: {
+      name: "ORACLE",
+      role: "WRITER",
+      classTitle: "ANALYST",
+      stats: [
+        { label: "STR", val: 50 },
+        { label: "MAG", val: 95 },
+        { label: "AGI", val: 75 },
+        { label: "LUK", val: 85 },
+      ],
+      color: "#FFB800",
+      svg: (
+        <svg
+          viewBox="0 0 100 120"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title>Oracle Profile</title>
+          <path
+            d="M50 20C35 20 20 35 20 60C20 85 10 95 10 110H90C90 95 80 85 80 60C80 35 65 20 50 20Z"
+            fill="#FFB800"
+            opacity="0.4"
+          />
+          <circle
+            cx="50"
+            cy="55"
+            r="16"
+            stroke="#FFB800"
+            strokeWidth="2"
+            strokeDasharray="3 3"
+          />
+          <circle cx="50" cy="55" r="6" fill="#FFB800" />
+          <line
+            x1="50"
+            y1="71"
+            x2="50"
+            y2="110"
+            stroke="#FFB800"
+            strokeWidth="1.5"
+          />
+        </svg>
+      ),
+    },
+    ai: {
+      name: "NEURON",
+      role: "BUILDER",
+      classTitle: "SYNAPSE",
+      stats: [
+        { label: "STR", val: 70 },
+        { label: "MAG", val: 99 },
+        { label: "AGI", val: 80 },
+        { label: "LUK", val: 90 },
+      ],
+      color: "#39FF14",
+      svg: (
+        <svg
+          viewBox="0 0 100 120"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title>Neuron Profile</title>
+          <path
+            d="M50 15C65 15 75 25 75 40C75 55 85 70 85 110H15C15 70 25 55 25 40C25 25 35 15 50 15Z"
+            fill="#39FF14"
+            opacity="0.4"
+          />
+          <circle cx="50" cy="45" r="10" stroke="#39FF14" strokeWidth="1.5" />
+          <path
+            d="M35 80C35 80 40 70 50 70C60 70 65 80 65 80"
+            stroke="#39FF14"
+            strokeWidth="2"
+          />
+          <circle cx="50" cy="45" r="3" fill="#39FF14" />
+        </svg>
+      ),
+    },
+  }[hoveredRealm as "fs" | "ds" | "ai"];
+
+  if (!details) {
     return (
-      <canvas
-        ref={canvasRef}
-        width={220}
-        height={140}
-        className="w-full h-full block"
-      />
+      <div className="portrait-card-back">
+        {/* Rotating Tarot / Gear Design */}
+        <div className="portrait-tarot-design">
+          <svg
+            width="80"
+            height="80"
+            viewBox="0 0 100 100"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <title>Tarot Card Design</title>
+            <circle cx="50" cy="50" r="45" strokeDasharray="3 3" />
+            <circle cx="50" cy="50" r="30" />
+            <polygon points="50,5 95,50 50,95 5,50" />
+            <polygon points="50,20 80,50 50,80 20,50" />
+            <circle cx="50" cy="50" r="6" fill="currentColor" />
+          </svg>
+        </div>
+        <div className="mt-4 font-display text-xs tracking-[0.25em] text-[#e8e3d8] font-bold text-center">
+          LEAF.EXE CORE
+        </div>
+        <div className="text-[8px] font-mono text-zinc-500 uppercase mt-1">
+          Awaiting Selection...
+        </div>
+        <AudioVisualizer activeRealmId={activeRealmId} />
+      </div>
     );
   }
 
-  return null;
+  return (
+    <div
+      className="portrait-card-front"
+      style={{ "--accent-1": details.color } as React.CSSProperties}
+    >
+      <div className="portrait-card-header">
+        {details.name}
+        {" // "}
+        {details.role}
+      </div>
+      <div className="portrait-card-body">
+        <div className="portrait-card-img">{details.svg}</div>
+        <div className="portrait-card-info">
+          <div className="portrait-card-info-row font-bold text-zinc-400">
+            <span>CLASS</span>
+            <span className="portrait-card-info-val">{details.classTitle}</span>
+          </div>
+          {details.stats.map((s) => (
+            <div key={s.label} className="portrait-card-info-row">
+              <span>{s.label}</span>
+              <span className="portrait-card-info-val">{s.val}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <AudioVisualizer activeRealmId={activeRealmId} />
+    </div>
+  );
+}
+
+function AudioVisualizer({ activeRealmId }: { activeRealmId: string }) {
+  const trackNames: Record<string, string> = {
+    hub: "VELVET_ROOM.MP3",
+    fs: "CYBER_CITY_95.MP3",
+    ds: "STEINS_GATE.MP3",
+    ai: "MAGI_SYS_CALC.MP3",
+    about: "SPIRAL_ENERGY.MP3",
+    connect: "CHILL_HOP.MP3",
+  };
+
+  return (
+    <div className="flex items-center justify-center gap-3 mt-3 w-full bg-black/30 p-2 rounded border border-white/5">
+      <style>{`
+        @keyframes audio-bar {
+          0% { height: 20%; }
+          100% { height: 100%; }
+        }
+        .audio-bar {
+          width: 3px;
+          background-color: rgba(255,255,255,0.7);
+          animation: audio-bar 0.5s ease-in-out infinite alternate;
+        }
+      `}</style>
+      <div className="flex items-end gap-[3px] h-3">
+        <div className="audio-bar" style={{ animationDelay: '0s', animationDuration: '0.4s' }} />
+        <div className="audio-bar" style={{ animationDelay: '0.2s', animationDuration: '0.5s' }} />
+        <div className="audio-bar" style={{ animationDelay: '0.4s', animationDuration: '0.3s' }} />
+        <div className="audio-bar" style={{ animationDelay: '0.1s', animationDuration: '0.6s' }} />
+      </div>
+      <div className="text-[8px] font-mono text-zinc-400 uppercase tracking-widest w-32 truncate">
+        {trackNames[activeRealmId] || trackNames.hub}
+      </div>
+    </div>
+  );
 }
