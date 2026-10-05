@@ -31,7 +31,7 @@ components/
   sections/              SectionShell + About, Projects, Achievements, Education, Connect
   menu/PauseMenu         the ESC menu
   transitions/           shard wipe + code rain / orb burst / neural fire
-  three/NavigatorAvatar  lazy 3D VRM navigator (NEURON realm, desktop only)
+  three/JotaroAvatar     lazy 3D Jotaro that cycles poses (title screen + realms, desktop only)
   art/                   divergence meter, Yorozuya sign, ゴゴゴ, arcana card, …
 lib/
   content.ts             ALL portfolio content — edit this to update the site
@@ -52,18 +52,20 @@ lives in `lib/content.ts`.
 - **Gintama** — the Yorozuya signboard
 - **Grand Blue** — the 404 page (you dove too deep)
 
-All artwork for these is original SVG/CSS — no copyrighted images are used.
+All artwork for these is original SVG/CSS. The one exception is the 3D Jotaro
+(see Credits).
 
 ## Performance notes
 
 - Fonts are self-hosted with `next/font` (no render-blocking Google Fonts request).
 - Transitions cover → navigate → reveal as soon as the next route mounts; links prefetch on hover/focus.
-- Navigator cut-ins are ~65 KB of WebP total, served through `next/image` (AVIF/WebP).
-- The 3D avatar only loads on desktop, after idle, and pauses when off-screen.
+- Navigator cut-ins are ~145 KB of WebP total, served through `next/image` (AVIF/WebP).
+- The 3D Jotaro only loads on desktop, after idle, and pauses when off-screen.
 
 ## Credits
 
-Navigator avatar: **VRM1_Constraint_Twist_Sample** © 2022 pixiv Inc.
-(VRM licence: redistribution and modification allowed, commercial use allowed,
-credit not required). Textures were recompressed to WebP and the file gzipped
-(10.8 MB → 1.2 MB) — see `public/models/navigator.vrmz`.
+Navigator (3D Jotaro Kujo and the WebP cut-ins rendered from it): a third-party fan-distributed OBJ (Sketchfab download), rigged
+in Blender with six pose clips (idle, yare yare, point, ORA, Stardust,
+arms crossed), textures as WebP and the GLB gzipped (1.36 MB → 0.93 MB). See
+`public/models/jotaro.glbz`. Jotaro Kujo / JoJo's Bizarre Adventure ©
+Hirohiko Araki & LUCKY LAND COMMUNICATIONS / SHUEISHA.

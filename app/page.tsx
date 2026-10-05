@@ -1,6 +1,6 @@
-import { Navigator } from "@/components/art/Navigator";
 import { PersonaCalendar } from "@/components/art/PersonaCalendar";
 import { PersonaMenu } from "@/components/hub/PersonaMenu";
+import { LazyJotaro } from "@/components/three/LazyJotaro";
 
 export default function HubPage() {
   return (
@@ -14,13 +14,9 @@ export default function HubPage() {
       <div className="slab slab-3" />
       <div className="stitch" />
 
-      {/* Navigator cut-in (fills the old duotone photo-strip slot) */}
+      {/* Jotaro (fills the old duotone photo-strip slot) */}
       <div className="photo-strip hub-navigator intro-up">
-        <Navigator
-          variant="full"
-          priority
-          sizes="(max-width: 768px) 40vw, 22vw"
-        />
+        <LazyJotaro accent="#d61f3c" />
       </div>
 
       <PersonaCalendar className="hub-calendar" />

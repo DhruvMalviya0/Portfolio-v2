@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { PROFILE } from "@/lib/content";
 import type { RealmId } from "@/lib/realmConfig";
 import { REALMS } from "@/lib/realmConfig";
@@ -29,27 +30,13 @@ export function ConnectSection({ realm }: { realm: RealmId | null }) {
       <figure className="wanted intro-left" aria-label="Wanted poster">
         <span className="wanted-head">WANTED</span>
         <div className="wanted-photo">
-          <svg viewBox="0 0 200 150" aria-hidden role="presentation">
-            <rect width="200" height="150" fill="#2a2016" />
-            {/* Leaf emblem in place of a photo */}
-            <path
-              d="M100 18 C150 30 168 78 140 118 C120 140 86 138 70 120 C48 92 60 40 100 18 Z"
-              fill="#5c7a3a"
-              stroke="#1a1209"
-              strokeWidth="4"
-            />
-            <path
-              d="M70 122 C92 92 112 64 132 40"
-              stroke="#1a1209"
-              strokeWidth="4"
-              fill="none"
-            />
-            <path
-              d="M92 92 L118 98 M104 74 L128 74 M84 106 L102 118"
-              stroke="#1a1209"
-              strokeWidth="3"
-            />
-          </svg>
+          <Image
+            src="/images/wanted.webp"
+            width={800}
+            height={600}
+            alt="Dhruv in a cherry-blossom kimono under a full moon"
+            sizes="(max-width: 900px) 360px, 30vw"
+          />
         </div>
         <span className="wanted-dead">DEAD OR ALIVE</span>
         <span className="wanted-name">

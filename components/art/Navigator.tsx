@@ -1,16 +1,15 @@
 import Image from "next/image";
 
 /*
-  The navigator — pixiv's VRM sample avatar (redistribution and
-  modification allowed by its VRM licence), rendered once to small
-  transparent WebP cut-ins. Realm colour is applied with CSS, so one
-  image serves every realm.
+  The navigator — Jotaro Kujo, rendered from the same rigged model as the
+  live 3D avatar to small transparent WebP cut-ins. Realm colour is
+  applied with CSS, so one image serves every realm.
 */
 
 const SOURCES = {
-  full: { src: "/images/navigator/full.webp", w: 332, h: 1099 },
-  bust: { src: "/images/navigator/bust.webp", w: 603, h: 800 },
-  eyes: { src: "/images/navigator/eyes.webp", w: 1200, h: 360 },
+  full: { src: "/images/navigator/jotaro-full.webp", w: 380, h: 1100 },
+  bust: { src: "/images/navigator/jotaro-bust.webp", w: 543, h: 800 },
+  eyes: { src: "/images/navigator/jotaro-eyes.webp", w: 1200, h: 360 },
 } as const;
 
 interface NavigatorProps {
@@ -26,7 +25,7 @@ export function Navigator({
   className,
   sizes = "(max-width: 768px) 60vw, 30vw",
   priority = false,
-  alt = "Navigator — an anime-style guide character",
+  alt = "Jotaro Kujo",
 }: NavigatorProps) {
   const s = SOURCES[variant];
   return (

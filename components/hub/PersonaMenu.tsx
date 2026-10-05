@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/TransitionLink";
 import { HUB_MENU_ITEMS, REALMS, type RealmId } from "@/lib/realmConfig";
 import { sfx } from "@/lib/sfx";
+import { usePortfolioStore } from "@/lib/store";
 import { useMenuNav } from "@/lib/useMenuNav";
 
 const HUB_HINTS: Record<string, string> = {
@@ -28,6 +29,12 @@ export function PersonaMenu() {
     count: HUB_MENU_ITEMS.length,
     onConfirm: (i) => navigate(HUB_MENU_ITEMS[i].href, HUB_MENU_ITEMS[i].realm),
   });
+
+  // Jotaro strikes a new pose whenever the selection moves
+  const setMenuFocus = usePortfolioStore((s) => s.setMenuFocus);
+  useEffect(() => {
+    setMenuFocus(`hub:${activeIndex}`);
+  }, [activeIndex, setMenuFocus]);
 
   const activeItem = HUB_MENU_ITEMS[activeIndex];
   const previewRealm = activeItem.realm;

@@ -1,10 +1,9 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 import { ArcanaCard } from "@/components/art/ArcanaCard";
 import { Menacing } from "@/components/art/Menacing";
-import { Navigator } from "@/components/art/Navigator";
+import { LazyJotaro } from "@/components/three/LazyJotaro";
 import {
   TransitionLink,
   useTransitionNav,
@@ -12,23 +11,8 @@ import {
 import { achievementsFor, projectsFor, SECTIONS } from "@/lib/content";
 import { REALMS, type RealmId } from "@/lib/realmConfig";
 import { sfx } from "@/lib/sfx";
+import { usePortfolioStore } from "@/lib/store";
 import { useMenuNav } from "@/lib/useMenuNav";
-
-// three.js only ships to the NEURON realm, and only on the client
-const NavigatorAvatar = dynamic(
-  () =>
-    import("@/components/three/NavigatorAvatar").then((m) => m.NavigatorAvatar),
-  {
-    ssr: false,
-    loading: () => (
-      <Navigator
-        variant="full"
-        priority
-        sizes="(max-width: 768px) 40vw, 22vw"
-      />
-    ),
-  },
-);
 
 export function RealmMenu({ realm: realmId }: { realm: RealmId }) {
   const realm = REALMS[realmId];
@@ -60,6 +44,12 @@ export function RealmMenu({ realm: realmId }: { realm: RealmId }) {
     onConfirm: (i) => navigate(menuItems[i].href),
   });
   const line = lines[menuItems[activeIndex].label] ?? realm.quote;
+
+  // Jotaro strikes a new pose whenever the selection moves
+  const setMenuFocus = usePortfolioStore((s) => s.setMenuFocus);
+  useEffect(() => {
+    setMenuFocus(`${realmId}:${activeIndex}`);
+  }, [realmId, activeIndex, setMenuFocus]);
 
   const seg = (n: number, of: number) =>
     Array.from({ length: 10 }).map((_, i) => (
@@ -94,15 +84,7 @@ export function RealmMenu({ realm: realmId }: { realm: RealmId }) {
 
       {/* Navigator + speech bubble */}
       <div className="photo-strip realm-navigator intro-up">
-        {realmId === "ai" ? (
-          <NavigatorAvatar accent={realm.accent1} />
-        ) : (
-          <Navigator
-            variant="full"
-            priority
-            sizes="(max-width: 768px) 40vw, 22vw"
-          />
-        )}
+        <LazyJotaro accent={realm.accent1} />
       </div>
       <p className="navi-bubble" key={line} aria-live="polite">
         <span className="navi-name">NAVI</span>

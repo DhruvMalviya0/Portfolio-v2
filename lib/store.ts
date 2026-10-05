@@ -49,6 +49,10 @@ interface PortfolioStore {
   setMenuOpen: (open: boolean) => void;
   toggleMenu: () => void;
 
+  // Which menu item has focus ("<menu>:<index>") — Jotaro re-poses on change
+  menuFocus: string;
+  setMenuFocus: (focus: string) => void;
+
   // Sound effects (off by default)
   sfxEnabled: boolean;
   setSfxEnabled: (on: boolean) => void;
@@ -108,6 +112,9 @@ export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
   menuOpen: false,
   setMenuOpen: (open) => set({ menuOpen: open }),
   toggleMenu: () => set((s) => ({ menuOpen: !s.menuOpen })),
+
+  menuFocus: "",
+  setMenuFocus: (focus) => set({ menuFocus: focus }),
 
   sfxEnabled: false,
   setSfxEnabled: (on) => {
