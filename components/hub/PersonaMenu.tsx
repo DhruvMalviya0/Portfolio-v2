@@ -1,60 +1,70 @@
 "use client";
 
-import { gsap } from "gsap";
-import { Fragment, useEffect, useRef, useState } from "react";
-import { TransitionLink } from "@/components/ui/TransitionLink";
-import { HUB_MENU_ITEMS, type RealmId } from "@/lib/realmConfig";
+import { Fragment, useEffect, useRef } from "react";
+import { DivergenceMeter } from "@/components/art/DivergenceMeter";
+import { Menacing } from "@/components/art/Menacing";
+import { YorozuyaSign } from "@/components/art/YorozuyaSign";
+import {
+  TransitionLink,
+  useTransitionNav,
+} from "@/components/ui/TransitionLink";
+import { HUB_MENU_ITEMS, REALMS, type RealmId } from "@/lib/realmConfig";
+import { sfx } from "@/lib/sfx";
+import { useMenuNav } from "@/lib/useMenuNav";
+
+const HUB_HINTS: Record<string, string> = {
+  "/fs": "React · Next · Node · Postgres · Three.js",
+  "/ds": "Forecasting · ML · statistical truth",
+  "/ai": "LLMs · agents · vision · embodied AI",
+  "/about": "Who is LEAF?",
+  "/connect": "Send a calling card",
+};
 
 export function PersonaMenu() {
   const menuRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLDivElement>(null);
-  const statsRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const navigate = useTransitionNav();
 
+  const [activeIndex, setActiveIndex] = useMenuNav({
+    count: HUB_MENU_ITEMS.length,
+    onConfirm: (i) => navigate(HUB_MENU_ITEMS[i].href, HUB_MENU_ITEMS[i].realm),
+  });
+
+  const activeItem = HUB_MENU_ITEMS[activeIndex];
+  const previewRealm = activeItem.realm;
+
+  // Let the slabs behind the menu preview the hovered realm's palette
   useEffect(() => {
-    const items = menuRef.current?.querySelectorAll(".menu-item");
-    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-
-    // Title slides in from left
-    tl.fromTo(
-      titleRef.current,
-      { x: -120, opacity: 0 },
-      { x: 0, opacity: 1, duration: 0.6 },
-    );
-
-    // Menu items stagger in
-    if (items) {
-      tl.fromTo(
-        items,
-        { x: -80, opacity: 0 },
-        { x: 0, opacity: 1, duration: 0.4, stagger: 0.06 },
-        "-=0.2",
-      );
-    }
-
-    // Stats fade in
-    tl.fromTo(
-      statsRef.current,
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.4 },
-      "-=0.3",
-    );
-  }, []);
+    const stage = menuRef.current?.closest(
+      ".persona-stage",
+    ) as HTMLElement | null;
+    if (!stage) return;
+    if (previewRealm) stage.dataset.preview = previewRealm;
+    else delete stage.dataset.preview;
+  }, [previewRealm]);
 
   return (
     <div style={{ display: "contents" }}>
       {/* Title block */}
-      <div ref={titleRef} className="title-block">
+      <div className="title-block intro-left">
         <span className="eyebrow">SELECT REALM</span>
-        <div className="title font-display">
+        <h1 className="title font-display">
           LEAF
           <br />
           .EXE
-        </div>
+        </h1>
+        <p className="hub-name">DHRUV MALVIYA</p>
       </div>
 
+      <div className="hub-meter intro-left" style={{ animationDelay: "120ms" }}>
+        <DivergenceMeter
+          value={previewRealm ? REALMS[previewRealm].worldLine : "0.000000"}
+        />
+      </div>
+
+      <YorozuyaSign className="hub-yorozuya intro-left" />
+
       {/* HP/MP segmented stats */}
-      <div ref={statsRef} className="stats">
+      <div className="stats intro-up">
         <div className="stat-row">
           <span className="stat-label">HP</span>
           <div className="stat-bar">
@@ -80,7 +90,7 @@ export function PersonaMenu() {
       </div>
 
       {/* Menu block */}
-      <div ref={menuRef} className="menu">
+      <nav ref={menuRef} className="menu" aria-label="Realm select">
         {HUB_MENU_ITEMS.map((item, idx) => {
           const numStr = String(idx + 1).padStart(2, "0");
           const isActive = idx === activeIndex;
@@ -91,17 +101,25 @@ export function PersonaMenu() {
               <TransitionLink
                 href={item.href}
                 targetRealm={item.realm as RealmId}
-                className={`menu-item ${isActive ? "active" : ""}`}
-                style={{ outline: "none" }}
-                onMouseEnter={() => setActiveIndex(idx)}
+                className={`menu-item intro-item ${isActive ? "active" : ""}`}
+                style={{ animationDelay: `${200 + idx * 60}ms` }}
+                onMouseEnter={() => {
+                  if (!isActive) sfx.move();
+                  setActiveIndex(idx);
+                }}
+                onFocus={() => setActiveIndex(idx)}
               >
                 <span className="menu-num">{numStr}</span>
                 <span className="menu-label font-display">{item.label}</span>
+                {isActive && <Menacing className="menu-menacing" />}
               </TransitionLink>
             </Fragment>
           );
         })}
-      </div>
+        <p className="menu-hint" aria-live="polite">
+          {HUB_HINTS[activeItem.href]}
+        </p>
+      </nav>
     </div>
   );
 }
