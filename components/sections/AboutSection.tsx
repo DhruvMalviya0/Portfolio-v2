@@ -46,7 +46,7 @@ export function AboutSection({ realm }: { realm: RealmId | null }) {
             </li>
             <li>
               <span>QUESTS</span>
-              {PROJECTS.length} completed builds
+              {PROJECTS.length} builds
             </li>
             <li>
               <span>STATUS</span>
