@@ -1,9 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
-import { REALMS, type RealmId } from "@/lib/realmConfig";
-import { usePortfolioStore } from "@/lib/store";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { type ReactNode, useCallback } from "react";
+import { REALMS, type RealmId, realmFromPath } from "@/lib/realmConfig";
+import { sfx } from "@/lib/sfx";
+import { type TransitionType, usePortfolioStore } from "@/lib/store";
 
 interface TransitionLinkProps {
   href: string;
@@ -12,6 +14,47 @@ interface TransitionLinkProps {
   targetRealm?: RealmId | null;
   style?: React.CSSProperties;
   onMouseEnter?: () => void;
+  onFocus?: () => void;
+  "aria-label"?: string;
+  "aria-current"?: "page" | undefined;
+}
+
+/**
+ * Realm entry from outside the realm gets the realm's signature effect;
+ * every other hop gets the quick shard wipe.
+ */
+const pickTransition = (
+  from: string,
+  href: string,
+  targetRealm?: RealmId | null,
+): TransitionType => {
+  const dest = targetRealm ?? realmFromPath(href);
+  if (dest && realmFromPath(from) !== dest && href === `/${dest}`) {
+    return REALMS[dest].transitionType;
+  }
+  return "fade";
+};
+
+/** Programmatic navigation with the same transition (used by keyboard menus). */
+export function useTransitionNav() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const triggerTransition = usePortfolioStore((s) => s.triggerTransition);
+
+  return useCallback(
+    (href: string, targetRealm?: RealmId | null) => {
+      if (href === pathname) {
+        usePortfolioStore.getState().setMenuOpen(false);
+        return;
+      }
+      sfx.confirm();
+      router.prefetch(href);
+      triggerTransition(href, pickTransition(pathname, href, targetRealm), () =>
+        router.push(href),
+      );
+    },
+    [pathname, router, triggerTransition],
+  );
 }
 
 export function TransitionLink({
@@ -21,40 +64,38 @@ export function TransitionLink({
   targetRealm,
   style,
   onMouseEnter,
+  onFocus,
+  ...aria
 }: TransitionLinkProps) {
   const router = useRouter();
-  const { triggerTransition, endTransition } = usePortfolioStore();
+  const navigate = useTransitionNav();
 
-  const getTransitionType = () => {
-    if (targetRealm && REALMS[targetRealm]) {
-      return REALMS[targetRealm].transitionType;
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Let the browser handle new-tab / new-window clicks
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+      return;
     }
-    return "fade";
-  };
-
-  const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-
-    const type = getTransitionType();
-
-    triggerTransition(href, type, () => {
-      router.push(href);
-      // Small delay so page mounts before we end the transition
-      setTimeout(() => {
-        endTransition();
-      }, 300);
-    });
+    navigate(href, targetRealm);
   };
 
   return (
-    <a
+    <Link
       href={href}
       onClick={handleClick}
       className={className}
       style={style}
-      onMouseEnter={onMouseEnter}
+      onMouseEnter={() => {
+        router.prefetch(href);
+        onMouseEnter?.();
+      }}
+      onFocus={() => {
+        router.prefetch(href);
+        onFocus?.();
+      }}
+      {...aria}
     >
       {children}
-    </a>
+    </Link>
   );
 }

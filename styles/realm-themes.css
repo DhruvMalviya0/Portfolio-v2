@@ -19,9 +19,11 @@
   background-image: radial-gradient(circle, #000 1px, transparent 1px);
   background-size: 6px 6px;
   opacity: 0.12;
-  mix-blend-mode: multiply;
+  /* No mix-blend-mode: blending a full-screen layer forces the whole page
+     to recomposite every frame. Plain opacity looks the same here. */
   pointer-events: none;
   z-index: 50;
+  contain: strict;
 }
 
 /* ===== LAYERED DIAGONAL SLABS ===== */
@@ -50,6 +52,32 @@
   width: 42%;
   background: var(--accent-1);
   transform: skewX(-12deg);
+}
+
+/* Hub: slabs preview the hovered realm's palette */
+.persona-stage[data-preview="fs"] .slab-3 {
+  background: #00ffff;
+}
+.persona-stage[data-preview="ds"] .slab-3 {
+  background: #ffb800;
+}
+.persona-stage[data-preview="ai"] .slab-3 {
+  background: #39ff14;
+}
+.persona-stage[data-preview="fs"] .slab-2 {
+  background: #7b2fbe;
+}
+.persona-stage[data-preview="ds"] .slab-2 {
+  background: #c0392b;
+}
+.persona-stage[data-preview="ai"] .slab-2 {
+  background: #ffffff;
+}
+.persona-stage[data-preview] .slab-2,
+.persona-stage[data-preview] .slab-3,
+.persona-stage .slab-2,
+.persona-stage .slab-3 {
+  transition: background-color 0.35s var(--ease-game);
 }
 
 /* thin divider line */
