@@ -2,6 +2,11 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "leaf",
   "compatibility_date": "2026-10-06",
+  "assets": {
+    // Static export produced by `next build` (output: "export")
+    "directory": "./out",
+    "not_found_handling": "404-page"
+  },
   "observability": {
     "enabled": true
   }

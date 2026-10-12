@@ -1,23 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Every route is static — emit plain HTML to out/ for Cloudflare static assets.
+  // Cache headers live in public/_headers since next.config headers() don't apply to exports.
+  output: "export",
   images: {
-    // Serve AVIF where supported, WebP otherwise
-    formats: ["image/avif", "image/webp"],
-  },
-  async headers() {
-    return [
-      {
-        // Navigator model + cut-ins never change in place — cache hard
-        source: "/:dir(models|images)/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
-    ];
+    // No image optimizer on static hosting; source images are already WebP
+    unoptimized: true,
   },
 };
 

@@ -1,0 +1,6 @@
+# Navigator model + cut-ins never change in place — cache hard
+/models/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/images/*
+  Cache-Control: public, max-age=31536000, immutable
