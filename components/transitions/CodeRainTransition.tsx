@@ -4,84 +4,67 @@ import { useEffect, useRef } from "react";
 
 interface CodeRainProps {
   color?: string;
+  background?: string;
 }
 
-export function CodeRainTransition({ color = "#00FFFF" }: CodeRainProps) {
+const CHARS =
+  "アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEF";
+
+export function CodeRainTransition({
+  color = "#00FFFF",
+  background = "#080810",
+}: CodeRainProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    // Opaque context is cheaper to composite
+    const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
 
-    // Set width and height matching container dimensions
+    // Render at CSS pixel size (DPR 1) — it's a 0.7s effect, not a poster
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    ctx.fillStyle = background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const fontSize = 14;
-    const columns = Math.floor(canvas.width / fontSize);
-    const drops: number[] = Array(columns).fill(1);
+    const fontSize = 16;
+    const columns = Math.ceil(canvas.width / fontSize);
+    // Start drops staggered above the screen so it doesn't look like a wall
+    const drops = Array.from(
+      { length: columns },
+      () => -Math.random() * (canvas.height / fontSize) * 0.6,
+    );
+    const speeds = Array.from({ length: columns }, () => 1 + Math.random());
+    ctx.font = `${fontSize}px ui-monospace, monospace`;
 
-    const chars =
-      "アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEF";
-
-    let animId: number;
-
+    let animId = 0;
     const draw = () => {
-      // Fade trail
-      ctx.fillStyle = "rgba(8, 8, 16, 0.08)";
+      ctx.fillStyle = `${background}22`;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.font = `${fontSize}px 'JetBrains Mono', monospace`;
-
-      for (let i = 0; i < drops.length; i++) {
-        const char = chars[Math.floor(Math.random() * chars.length)];
-        const x = i * fontSize;
+      for (let i = 0; i < columns; i++) {
         const y = drops[i] * fontSize;
-
-        // Brighter head character
-        if (drops[i] * fontSize < canvas.height * 0.1) {
+        if (y > 0) {
+          const char = CHARS[(Math.random() * CHARS.length) | 0];
           ctx.fillStyle = "#FFFFFF";
-        } else {
+          ctx.fillText(char, i * fontSize, y);
           ctx.fillStyle = color;
+          ctx.fillText(
+            CHARS[(Math.random() * CHARS.length) | 0],
+            i * fontSize,
+            y - fontSize,
+          );
         }
-
-        ctx.fillText(char, x, y);
-
-        if (y > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0;
-        }
-        drops[i]++;
+        drops[i] += speeds[i];
       }
-
       animId = requestAnimationFrame(draw);
     };
+    animId = requestAnimationFrame(draw);
 
-    draw();
+    return () => cancelAnimationFrame(animId);
+  }, [color, background]);
 
-    const handleResize = () => {
-      if (!canvas) return;
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [color]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        display: "block",
-        width: "100vw",
-        height: "100vh",
-        background: "#080810",
-      }}
-    />
-  );
+  return <canvas ref={canvasRef} className="fx-canvas" aria-hidden />;
 }

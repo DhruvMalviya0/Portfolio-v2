@@ -1,7 +1,29 @@
 import { create } from "zustand";
 import type { RealmId } from "./realmConfig";
 
-type TransitionType = "codeRain" | "orbBurst" | "neuralFire" | "fade" | null;
+export type TransitionType =
+  | "codeRain"
+  | "orbBurst"
+  | "neuralFire"
+  | "fade"
+  | null;
+
+/**
+ * cover  → shards / realm effect slam in over the old page
+ * hold   → screen is covered, router is navigating
+ * reveal → shards fly out over the new page
+ */
+export type TransitionPhase = "idle" | "cover" | "hold" | "reveal";
+
+/** How long the cover animation runs before we navigate (ms). */
+export const COVER_DURATIONS: Record<NonNullable<TransitionType>, number> = {
+  codeRain: 720,
+  orbBurst: 680,
+  neuralFire: 760,
+  fade: 300,
+};
+
+export const REVEAL_DURATION = 380;
 
 interface PortfolioStore {
   // Current realm
@@ -12,46 +34,93 @@ interface PortfolioStore {
   isTransitioning: boolean;
   transitionType: TransitionType;
   transitionDestination: string | null;
+  transitionPhase: TransitionPhase;
 
-  // Start a transition — resolves when animation is done
+  // Start a transition — onComplete fires once the screen is covered
   triggerTransition: (
     href: string,
     type: TransitionType,
     onComplete: () => void,
   ) => void;
   endTransition: () => void;
+
+  // Pause (ESC) menu
+  menuOpen: boolean;
+  setMenuOpen: (open: boolean) => void;
+  toggleMenu: () => void;
+
+  // Which menu item has focus ("<menu>:<index>") — Jotaro re-poses on change
+  menuFocus: string;
+  setMenuFocus: (focus: string) => void;
+
+  // Sound effects (off by default)
+  sfxEnabled: boolean;
+  setSfxEnabled: (on: boolean) => void;
 }
 
-export const usePortfolioStore = create<PortfolioStore>((set) => ({
+let coverTimer: ReturnType<typeof setTimeout> | undefined;
+let revealTimer: ReturnType<typeof setTimeout> | undefined;
+
+export const usePortfolioStore = create<PortfolioStore>((set, get) => ({
   currentRealm: null,
   setRealm: (realm) => set({ currentRealm: realm }),
 
   isTransitioning: false,
   transitionType: null,
   transitionDestination: null,
+  transitionPhase: "idle",
 
   triggerTransition: (href, type, onComplete) => {
+    // Ignore double clicks while a transition is already running
+    if (get().isTransitioning) return;
+    clearTimeout(revealTimer);
+
     set({
       isTransitioning: true,
       transitionType: type,
       transitionDestination: href,
+      transitionPhase: "cover",
+      menuOpen: false,
     });
 
-    // The TransitionManager calls onComplete when its animation ends
-    // Duration is set per animation type inside the component
-    const durations: Record<NonNullable<TransitionType>, number> = {
-      codeRain: 1800,
-      orbBurst: 1600,
-      neuralFire: 2000,
-      fade: 600,
-    };
-    setTimeout(onComplete, durations[type ?? "fade"]);
+    coverTimer = setTimeout(
+      () => {
+        set({ transitionPhase: "hold" });
+        onComplete();
+      },
+      COVER_DURATIONS[type ?? "fade"],
+    );
   },
 
-  endTransition: () =>
-    set({
-      isTransitioning: false,
-      transitionType: null,
-      transitionDestination: null,
-    }),
+  endTransition: () => {
+    const { transitionPhase } = get();
+    if (transitionPhase === "idle" || transitionPhase === "reveal") return;
+    clearTimeout(coverTimer);
+    set({ transitionPhase: "reveal" });
+    revealTimer = setTimeout(
+      () =>
+        set({
+          isTransitioning: false,
+          transitionType: null,
+          transitionDestination: null,
+          transitionPhase: "idle",
+        }),
+      REVEAL_DURATION,
+    );
+  },
+
+  menuOpen: false,
+  setMenuOpen: (open) => set({ menuOpen: open }),
+  toggleMenu: () => set((s) => ({ menuOpen: !s.menuOpen })),
+
+  menuFocus: "",
+  setMenuFocus: (focus) => set({ menuFocus: focus }),
+
+  sfxEnabled: false,
+  setSfxEnabled: (on) => {
+    try {
+      localStorage.setItem("leaf-sfx", on ? "1" : "0");
+    } catch {}
+    set({ sfxEnabled: on });
+  },
 }));

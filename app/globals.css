@@ -1,6 +1,6 @@
-@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 @import "../styles/realm-themes.css";
+@import "../styles/experience.css";
 
 /* ─── Global Tokens ─── */
 :root {
@@ -16,30 +16,37 @@
   --border-subtle: rgba(12, 12, 12, 0.25);
 
   /* Typography */
-  --font-display: "Rajdhani", sans-serif;
-  --font-body: "Space Grotesk", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  /* Self-hosted via next/font (see app/layout.tsx) */
+  --font-display: var(--font-rajdhani), "Rajdhani", sans-serif;
+  --font-body: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", monospace;
+  --font-jp:
+    "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP",
+    "Noto Sans CJK JP", sans-serif;
 
   /* Transitions */
   --ease-game: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /* ─── Realm Overrides ─── */
-[data-realm="fs"] {
+[data-realm="fs"],
+:root[data-realm="fs"] {
   --accent-1: #00ffff;
   --accent-2: #7b2fbe;
   --accent-glow: transparent;
   --bg-primary: #0a0a1a;
 }
 
-[data-realm="ds"] {
+[data-realm="ds"],
+:root[data-realm="ds"] {
   --accent-1: #ffb800;
   --accent-2: #c0392b;
   --accent-glow: transparent;
   --bg-primary: #1a1040;
 }
 
-[data-realm="ai"] {
+[data-realm="ai"],
+:root[data-realm="ai"] {
   --accent-1: #39ff14;
   --accent-2: #ffffff;
   --accent-glow: transparent;

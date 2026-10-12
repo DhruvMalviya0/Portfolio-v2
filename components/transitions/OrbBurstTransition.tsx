@@ -9,8 +9,27 @@ interface Orb {
   vy: number;
   radius: number;
   alpha: number;
-  color: string;
+  sprite: HTMLCanvasElement;
 }
+
+const COLORS = ["#FFB800", "#C0392B", "#FF6B35", "#FFE000"];
+
+/** Pre-render one soft glow per colour; drawing a bitmap is far cheaper
+ *  than building a radial gradient per orb per frame. */
+const makeSprite = (color: string) => {
+  const s = document.createElement("canvas");
+  s.width = s.height = 64;
+  const c = s.getContext("2d");
+  if (c) {
+    const g = c.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, color);
+    g.addColorStop(0.35, `${color}aa`);
+    g.addColorStop(1, `${color}00`);
+    c.fillStyle = g;
+    c.fillRect(0, 0, 64, 64);
+  }
+  return s;
+};
 
 export function OrbBurstTransition() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -18,17 +37,19 @@ export function OrbBurstTransition() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    ctx.fillStyle = "#1A1040";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
-    const colors = ["#FFB800", "#C0392B", "#FF6B35", "#FFE000"];
+    const sprites = COLORS.map(makeSprite);
 
-    const orbs: Orb[] = Array.from({ length: 80 }, () => {
+    const orbs: Orb[] = Array.from({ length: 70 }, () => {
       const angle = Math.random() * Math.PI * 2;
       const speed = Math.random() * 18 + 6;
       return {
@@ -36,78 +57,36 @@ export function OrbBurstTransition() {
         y: cy,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        radius: Math.random() * 18 + 4,
+        radius: Math.random() * 22 + 8,
         alpha: 1,
-        color: colors[Math.floor(Math.random() * colors.length)],
+        sprite: sprites[(Math.random() * sprites.length) | 0],
       };
     });
 
-    let fillAlpha = 0;
-    let animId: number;
-
+    let animId = 0;
     const draw = () => {
-      // Gradually fill screen with dark color
-      ctx.fillStyle = `rgba(26, 16, 64, ${fillAlpha})`;
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "rgba(26, 16, 64, 0.18)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      fillAlpha = Math.min(fillAlpha + 0.02, 0.15);
+      ctx.globalCompositeOperation = "lighter";
 
       for (const orb of orbs) {
         orb.x += orb.vx;
         orb.y += orb.vy;
-        orb.alpha -= 0.012;
+        orb.alpha -= 0.014;
         orb.radius *= 0.99;
-
         if (orb.alpha <= 0) continue;
-
-        ctx.save();
+        const d = orb.radius * 4;
         ctx.globalAlpha = orb.alpha;
-
-        // Glow
-        const gradient = ctx.createRadialGradient(
-          orb.x,
-          orb.y,
-          0,
-          orb.x,
-          orb.y,
-          orb.radius * 2,
-        );
-        gradient.addColorStop(0, orb.color);
-        gradient.addColorStop(1, "transparent");
-
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(orb.x, orb.y, orb.radius * 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
+        ctx.drawImage(orb.sprite, orb.x - d / 2, orb.y - d / 2, d, d);
       }
-
+      ctx.globalCompositeOperation = "source-over";
       animId = requestAnimationFrame(draw);
     };
+    animId = requestAnimationFrame(draw);
 
-    draw();
-
-    const handleResize = () => {
-      if (!canvas) return;
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("resize", handleResize);
-    };
+    return () => cancelAnimationFrame(animId);
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        display: "block",
-        width: "100vw",
-        height: "100vh",
-        background: "#1A1040",
-      }}
-    />
-  );
+  return <canvas ref={canvasRef} className="fx-canvas" aria-hidden />;
 }
